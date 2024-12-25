@@ -1,0 +1,2 @@
+"DESCRIPTION","DURATION IN MS","NAME","PARENT SUITE","START TIME","STATUS","STOP TIME","SUB SUITE","SUITE","TEST CLASS","TEST METHOD"
+"","1427","loginTest()","","Wed Dec 25 07:39:17 GMT 2024","passed","Wed Dec 25 07:39:18 GMT 2024","","com.nkb.tests.LoginTest","com.nkb.tests.LoginTest","loginTest"

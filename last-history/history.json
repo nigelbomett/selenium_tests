@@ -1,0 +1,1 @@
+{"2a0507eb62b06b156b296f02f8f86f0c":{"statistic":{"failed":0,"broken":0,"skipped":0,"passed":1,"unknown":0,"total":1},"items":[{"uid":"f55893b6cf8d75a","reportUrl":"https://nigelbomett.github.io/selenium_tests/9//#testresult/f55893b6cf8d75a","status":"passed","time":{"start":1735112357249,"stop":1735112358676,"duration":1427}}]}}
