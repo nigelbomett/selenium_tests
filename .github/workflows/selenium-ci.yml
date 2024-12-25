@@ -15,29 +15,26 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     
-    - name: Set up JDK 17
+    - name: Set up JDK 22
       uses: actions/setup-java@v3
       with:
-        java-version: '17'
+        java-version: '22'
         distribution: 'temurin'
         cache: 'maven'
     
-    # Using specific Chrome version
+    # Setup Chrome using apt
     - name: Setup Chrome
-      uses: browser-actions/setup-chrome@v1
-      with:
-        chrome-version: '131.0.6778.205'
-        
-    - name: Get Chrome version
       run: |
+        wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
+        sudo sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/sources.list.d/google.list'
+        sudo apt-get update
+        sudo apt-get install google-chrome-stable=131.0.6778.205-1
         google-chrome --version
-        echo "CHROME_VERSION=$(google-chrome --version | awk '{print $3}')" >> $GITHUB_ENV
         
-    # Setup matching ChromeDriver version
+    # Setup matching ChromeDriver
     - name: Setup ChromeDriver
       uses: nanasess/setup-chromedriver@v2
       with:
-        # Using the major version number from Chrome
         chromedriver-version: '131.0'
       
     - name: Start ChromeDriver and Xvfb
