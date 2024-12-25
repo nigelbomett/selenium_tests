@@ -1,0 +1,82 @@
+name: Selenium Test Suite
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up JDK 22
+      uses: actions/setup-java@v3
+      with:
+        java-version: '22'
+        distribution: 'temurin'
+        cache: 'maven'
+    
+    # Setup Chrome using apt with modern approach
+    - name: Setup Chrome
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y wget
+        wget -q https://dl-ssl.google.com/linux/linux_signing_key.pub
+        sudo mkdir -p /etc/apt/keyrings
+        sudo gpg --dearmor -o /etc/apt/keyrings/google-chrome.gpg linux_signing_key.pub
+        echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/google-chrome.gpg] http://dl.google.com/linux/chrome/deb/ stable main" | sudo tee /etc/apt/sources.list.d/google-chrome.list
+        sudo apt-get update
+        sudo apt-get install -y google-chrome-stable
+        chrome_version=$(google-chrome --version)
+        echo "Installed Chrome version: $chrome_version"
+        
+    # Get Chrome major version for ChromeDriver
+    - name: Get Chrome version
+      run: |
+        chrome_version=$(google-chrome --version | awk '{print $3}' | cut -d'.' -f1)
+        echo "CHROME_MAJOR_VERSION=$chrome_version" >> $GITHUB_ENV
+        echo "Chrome major version: $chrome_version"
+        
+    # Setup matching ChromeDriver
+    - name: Setup ChromeDriver
+      uses: nanasess/setup-chromedriver@v2
+      with:
+        chromedriver-version: "${{ env.CHROME_MAJOR_VERSION }}.0"
+      
+    - name: Start ChromeDriver and Xvfb
+      run: |
+        sudo apt-get install -y xvfb
+        Xvfb :99 -screen 0 1280x1024x24 > /dev/null 2>&1 &
+        export DISPLAY=:99
+        echo "ChromeDriver version:"
+        chromedriver --version
+        chromedriver --url-base=/wd/hub &
+        sleep 5
+        
+    - name: Run Tests
+      run: mvn clean test
+      env:
+        DISPLAY: :99
+      
+    - name: Upload Test Results
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: test-results
+        path: target/surefire-reports/
+        
+    - name: Generate Test Report
+      if: always()
+      run: mvn surefire-report:report-only
+      
+    - name: Upload Test Report
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: test-report
+        path: target/site/
